@@ -28,8 +28,23 @@ def read_urls(filename):
     extracting the hostname from the filename itself.
     Screens out duplicate urls and returns the urls sorted into
     increasing order."""
-    # +++your code here+++
-    pass
+    lst = []
+    # Opens file and searches for addresses with
+    # correct puzzle string and jpg tag
+    with open(filename) as file:
+        for line in file:
+            match = re.search('puzzle', line)
+            if match:
+                url = re.search(r'\S+puzzle+\S+.jpg', line)
+                if url:
+
+                    lst.append(url.group())
+    # Creates a set of "lst", removes all duplicates
+    set_lst = set(lst)
+    # Sorts list based on last four characters in address string
+    sorted_lst = sorted(list(set_lst), key=lambda x: x[-8:-4])
+    print("list sorted")
+    return sorted_lst
 
 
 def download_images(img_urls, dest_dir):
@@ -40,15 +55,53 @@ def download_images(img_urls, dest_dir):
     with an img tag to show each local image file.
     Creates the directory if necessary.
     """
-    # +++your code here+++
-    pass
+
+    # Creates a path for the images to be stored once downloaded
+    if not os.path.exists(dest_dir):
+        path = 'mkdir -p {0}'.format(dest_dir)
+        os.system(path)
+        print("Path created.")
+    else:
+        print "Path exists."
+
+    # For every image the urllib.urlretrieve runs and downloads
+    # the image into the specified folder.
+    print("Downloading images...")
+    image_tags = ""
+
+    for i, image_url in enumerate(img_urls):
+        print("Image", i, "downloaded!")
+        urllib.urlretrieve("http://code.google.com" + image_url, dest_dir
+                                                    + "/img"
+                                                    + str(i)
+                                                    + ".jpeg")
+        image_tags += """<img src='./{0}/img{1}{2}' /> """.format(dest_dir, str(i), ".jpeg")
+    print("Images downloaded!")
+
+    html = """
+            <html>
+            <head>
+            </head>
+            <container style="display:flex;">
+                <body>
+                    {0}
+                </body>
+            </contianer>
+            </html>
+            """.format(image_tags)
+
+    f = open('index.html', 'w')
+    f.write(html)
+    print("HTML created!")
 
 
 def create_parser():
     """Create an argument parser object"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--todir',  help='destination directory for downloaded images')
-    parser.add_argument('logfile', help='apache logfile to extract urls from')
+    parser.add_argument('-d', '--todir',
+                        help='destination directory for downloaded images')
+    parser.add_argument('logfile',
+                        help='apache logfile to extract urls from')
 
     return parser
 
